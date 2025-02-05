@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
+    <link rel="stylesheet" href="./style.css" />
+    <script type="text/javascript" src="https://d3js.org/d3.v7.min.js"></script>
+  </head>
+
+  <body>
+    <div id="mySidebar" class="sidebar">
+      <div class="logo">
+        <h2>Visualization</h2>
+      </div>
+      <a href="./Home.html" class="nav-item"
+        ><i class="fas fa-home"></i> Home</a
+      >
+      <a href="./Geo_pop_crash.html" class="nav-item"
+        ><i class="fas fa-globe"></i> Geo Visualization</a
+      >
+      <a href="./state-wise.html" class="nav-item"
+        ><i class="fas fa-map"></i> State Wise Visualization</a
+      >
+      <a
+        href="https://www.nhtsa.gov/file-downloads?p=nhtsa/downloads/"
+        target="_blank"
+        class="nav-item"
+        ><i class="fas fa-database"></i> Dataset</a
+      >
+      <a href="./about.html" class="nav-item"
+        ><i class="fas fa-info-circle"></i> About Us</a
+      >
+      <a href="./person-all.html" class="nav-item"
+      ><i class="fas fa-glass-martini"></i> Alcohol</a
+    >
+    </div>
+
+    <div id="main">
+      <!-- <button class="openbtn" onclick="openNav()">☰</button> -->
+      <div class="main-heading">
+        <h1>Fatal Crashes in USA</h1>
+      </div>
+
+      <div class="container flex-row-reverse">
+        <div class="container-item">
+          <select
+            class="form-select form-select-lg mb-3 card-container"
+            aria-label=".form-select-lg example"
+            id="stateDropdown"
+          ></select>
+        </div>
+        <div class="container-item">
+          <select
+            class="form-select form-select-lg mb-3 card-container"
+            aria-label=".form-select-lg example"
+            id="yearDropdown"
+          ></select>
+        </div>
+      </div>
+
+      <div class="container justify-content-center pb-5">
+        <div class="card card-container card-width me-5">
+          <div class="card-body">
+            <h5
+              class="card-title d-flex justify-content-center card-heading"
+              id="pie-chart-header"
+            >
+              Bar Graph: Age Group VS Alcohol
+            </h5>
+            <svg width="1200" height="600" id="svg1" class="m-5"></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const person_data = d3.csv("pershort.csv");
+      let selectedYear_global = "2015"; // Declare selectedYear as a global variable
+      let selectedState_global = "Alabama";
+
+      Promise.all([person_data])
+        .then(([data]) => {
+          const years = [...new Set(data.map((record) => record.YEAR))];
+          const yearDropdown = d3.select("#yearDropdown");
+          yearDropdown
+            .selectAll("option")
+            .data(years)
+            .enter()
+            .append("option")
+            .text((year) => year)
+            .attr("value", (year) => year);
+
+          const states = [...new Set(data.map((record) => record.STATENAME))];
+          const stateDropdown = d3.select("#stateDropdown");
+          stateDropdown
+            .selectAll("option")
+            .data(states)
+            .enter()
+            .append("option")
+            .text((states) => states)
+            .attr("value", (states) => states);
+
+          yearDropdown.on("change", function () {
+            const selectedYear = d3.select(this).property("value");
+            selectedYear_global = selectedYear;
+            clearChart(); // Clear the chart
+            draw_stackchart(data, selectedYear_global, selectedState_global);
+          });
+
+          stateDropdown.on("change", function () {
+            const selectedState = d3.select(this).property("value");
+            selectedState_global = selectedState;
+            clearChart(); // Clear the chart
+
+            draw_stackchart(data, selectedYear_global, selectedState_global);
+          });
+
+          draw_stackchart(data, selectedYear_global, selectedState_global);
+        })
+        .catch((error) => {
+          console.error("Error while loading the data: ", error);
+        });
+
+      function draw_stackchart(data, selectedYear, selectedState) {
+        let total_ages_sex = [];
+
+        data.forEach((record) => {
+          if (
+            record.YEAR == selectedYear &&
+            record.STATENAME == selectedState
+          ) {
+            if (record.DRINKING == 1) {
+              total_ages_sex.push({
+                age: record.AGE,
+                sex: record.SEXNAME,
+              });
+            }
+          }
+        });
+
+        // Convert age to a numeric value
+        total_ages_sex.forEach(function (d) {
+          d.age = +d.age;
+        });
+        total_ages_sex = total_ages_sex.filter(function (d) {
+          return d.age >= 21 && d.age <= 100;
+        });
+
+        // Define age groups
+        var ageGroups = [21, 30, 40, 50, 60, 70, 80, 100];
+
+        // Group the data by age groups
+        total_ages_sex.forEach(function (d) {
+          for (var i = 0; i < ageGroups.length - 1; i++) {
+            if (d.age >= ageGroups[i] && d.age < ageGroups[i + 1]) {
+              d.ageGroup = ageGroups[i] + "-" + ageGroups[i + 1];
+              break;
+            }
+          }
+        });
+
+        // set the dimensions and margins of the graph
+        var margin = { top: 30, right: 30, bottom: 20, left: 50 },
+          width = 460 - margin.left - margin.right,
+          height = 400 - margin.top - margin.bottom;
+
+        // append the svg object to the body of the page
+        var svg = d3
+          .select("#svg1")
+          .append("svg")
+          .attr("width", 900)
+          .attr("height", 600)
+          .append("g")
+          .attr(
+            "transform",
+            "translate(" + 80 + "," + margin.top + ")"
+          );
+
+        // List of subgroups = sex
+        var subgroups = ["Male", "Female"];
+
+        // List of groups = age groups
+        var groups = [...new Set(total_ages_sex.map((d) => d.ageGroup))]; // Unique age groups
+        console.log("group", groups);
+
+        var groups = [...new Set(total_ages_sex.map((d) => d.ageGroup))].sort(
+          (a, b) => {
+            // Sort age groups numerically
+            const [aStart, aEnd] = a.split("-").map(Number);
+            const [bStart, bEnd] = b.split("-").map(Number);
+            return aStart - bStart || aEnd - bEnd;
+          }
+        );
+        // Add Y axis
+        var y = d3.scaleBand().domain(groups).range([0, 350]).padding([0.2]);
+
+        svg.append("g").call(d3.axisLeft(y));
+
+        // Add X axis
+        var x = d3
+          .scaleLinear()
+          .domain([0, 100]) // Assuming the percentage range is 0 to 100
+          .range([0, 600]);
+
+        svg
+          .append("g")
+          .attr("transform", "translate(0,350)")
+          .call(d3.axisBottom(x).tickSizeOuter(0));
+
+        svg.append("g").call(d3.axisLeft(y));
+
+        // color palette = one color per subgroup
+        var color = d3
+          .scaleOrdinal()
+          .domain(subgroups)
+          .range(["#377eb8", "#e41a1c"]);
+
+        // Calculate percentages
+        var stackedData = d3
+          .stack()
+          .keys(subgroups)
+          .value(function (d, key) {
+            var totalForGroup = total_ages_sex.filter(function (e) {
+              return e.ageGroup === d;
+            }).length;
+
+            return (
+              (total_ages_sex.filter(function (e) {
+                return e.sex === key && e.ageGroup === d;
+              }).length /
+                totalForGroup) *
+              100
+            );
+          })(groups);
+
+        // Show the bars
+        svg
+          .append("g")
+          .selectAll("g")
+          .data(stackedData)
+          .enter()
+          .append("g")
+          .attr("fill", function (d) {
+            return color(d.key);
+          })
+          .selectAll("rect")
+          .data(function (d) {
+            return d;
+          })
+          .enter()
+          .append("rect")
+          .attr("x", 10) // Bars start from the left edge
+          .attr("y", function (d) {
+            return y(d.data) + 5;
+          }) // Adjust the position based on the Y scale
+          .attr("width", function (d) {
+            return x(d[1]) - x(d[0]);
+          }) // Adjust the width based on the X scale
+          .attr("height", 30); // Bar height based on the bandwidth of the Y scale
+
+        svg
+          .append("text")
+          .attr("font-family", "sans-serif")
+          .attr("font-size", 12)
+          .attr("text-anchor", "middle")
+          .attr("font-weight", "bold")
+          .attr("class", "y-axis-label")
+          .attr("x", -150)
+          .attr("y", -50)
+          .attr("transform", "rotate(-90)")
+          .attr("text-anchor", "middle")
+          .text("Age Group");
+
+        svg
+          .append("text")
+          .attr("font-family", "sans-serif")
+          .attr("font-size", 12)
+          .attr("text-anchor", "middle")
+          .attr("font-weight", "bold")
+          .attr("class", "x-axis-label")
+          .attr("x", 350)
+          .attr("y", 400)
+          .attr("text-anchor", "middle")
+          .text("Alcohol");
+
+        // Add legend
+        var legend = svg.append("g").attr("transform", "translate(650,50 )");
+
+        legend
+          .selectAll("rect")
+          .data(subgroups)
+          .enter()
+          .append("rect")
+          .attr("y", function (d, i) {
+            return i * 20;
+          })
+          .attr("width", 18)
+          .attr("height", 18)
+          .style("fill", function (d) {
+            return color(d);
+          });
+
+        legend
+          .selectAll("text")
+          .data(subgroups)
+          .enter()
+          .append("text")
+          .attr("y", function (d, i) {
+            return i * 20 + 12;
+          })
+          .attr("x", 22)
+          .style("fill", function (d) {
+            return color(d);
+          })
+          .text(function (d) {
+            return d;
+          });
+
+        console.log("total age sex ", total_ages_sex);
+      }
+
+      function clearChart() {
+        // Remove existing SVG elements
+        d3.select("#svg1").selectAll("*").remove();
+      }
+    </script>
+  </body>
+</html>

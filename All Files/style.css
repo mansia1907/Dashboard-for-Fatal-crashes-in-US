@@ -1,0 +1,161 @@
+body {
+  font-family: "Lato", sans-serif;
+  background-color: #f2f7fb;
+}
+
+.sidebar {
+  height: 100%;
+  /* width: 350px; */
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  background-color: #263544;
+  overflow-x: hidden;
+  transition: 0.5s;
+  padding-top: 25px;
+}
+
+.sidebar a {
+  padding: 1rem;
+  text-decoration: none;
+  font-size: 27px;
+  color: #b7c0cd;
+  display: block;
+  transition: 0.3s;
+  text-align: center;
+}
+
+.sidebar a:hover {
+  color: #f1f1f1;
+  background-color: #1d2531;
+}
+
+.sidebar .closebtn {
+  position: absolute;
+  top: 0;
+  right: 25px;
+  font-size: 36px;
+  margin-left: 50px;
+}
+
+.openbtn {
+  font-size: 20px;
+  cursor: pointer;
+  background-color: #111;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+}
+
+.openbtn:hover {
+  background-color: #444;
+}
+
+#main {
+  transition: margin-left 0.5s;
+  padding: 16px;
+  margin-left: 350px;
+}
+
+.main-heading {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.logo {
+  margin-bottom: 5rem;
+  color: #b7c0cd;
+  text-align: center;
+}
+
+.carousel-inner img {
+  width: 100%;
+  height: 40rem;
+  /* max-height: 100%; */
+  object-fit: cover;
+}
+
+.card-container {
+  border-radius: 5px;
+  box-shadow: 0 0 5px 0 rgba(43, 43, 43, 0.1),
+    0 11px 6px -7px rgba(43, 43, 43, 0.1);
+  transition: all 0.3s ease-in-out;
+}
+
+/* On smaller screens, where height is less than 450px, change the style of the sidenav (less padding and a smaller font size) */
+@media screen and (max-height: 450px) {
+  .sidebar {
+    padding-top: 15px;
+  }
+
+  .sidebar a {
+    font-size: 18px;
+  }
+}
+
+div.tooltip-donut {
+    position: absolute;
+    display: none;
+    width: auto;
+    height: auto;
+    background: none repeat scroll 0 0 white;
+    border: 0 none;
+    border-radius: 8px 8px 8px 8px;
+    box-shadow: -3px 3px 15px #888888;
+    color: black;
+    font: 16px sans-serif;
+    padding: 1rem;
+    text-align: center;
+}
+
+
+.select-dropdown {
+    padding: 10px;
+    width: 20rem;
+  }
+  .container {
+    display: flex;
+    flex-direction: row;
+  }
+  .container-item {
+    padding: 2rem;
+  }
+  
+  .card-width{
+    min-width: 2;
+  }
+
+  .overflow-table{
+    width: 37rem;
+    overflow-x: scroll;
+  }
+
+  .d3-tip {
+    line-height: 1;
+    font-weight: bold;
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    border-radius: 2px;
+    pointer-events: none;
+  }
+
+  .card-heading {
+    margin-bottom: 0;
+    color: #333;
+    font-size: 15px;
+    font-weight: 700;
+    display: inline-block;
+    margin-right: 10px;
+    line-height: 1.1;
+    position: relative;
+}
+
+.spinner-style {
+    height: 50rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+}
